@@ -126,6 +126,56 @@
             margin-bottom: 5px;
         }
 
+        .quality-selector {
+            margin-bottom: 25px;
+        }
+
+        .quality-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .quality-option {
+            padding: 12px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            font-size: 0.9em;
+        }
+
+        .quality-option:hover:not(.disabled) {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .quality-option.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .quality-option.disabled {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .quality-label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .quality-desc {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
         .btn {
             width: 100%;
             padding: 15px;
@@ -313,6 +363,7 @@
                 <h3 id="videoTitle"></h3>
                 <p><strong>Canal/Autor:</strong> <span id="uploader"></span></p>
                 <p><strong>Duración:</strong> <span id="duration"></span></p>
+                <p><strong>Resolución máxima:</strong> <span id="maxResolution"></span></p>
             </div>
         </div>
 
@@ -325,6 +376,28 @@
             <div class="format-option" data-format="audio" onclick="selectFormat('audio')">
                 <div class="format-icon">🎵</div>
                 <div>Audio MP3</div>
+            </div>
+        </div>
+
+        <div class="quality-selector">
+            <label>Selecciona la calidad:</label>
+            <div class="quality-options">
+                <div class="quality-option active" data-quality="best" onclick="selectQuality('best')">
+                    <span class="quality-label">Máxima</span>
+                    <span class="quality-desc">4K/1080p+</span>
+                </div>
+                <div class="quality-option" data-quality="high" onclick="selectQuality('high')">
+                    <span class="quality-label">Alta</span>
+                    <span class="quality-desc">1080p</span>
+                </div>
+                <div class="quality-option" data-quality="medium" onclick="selectQuality('medium')">
+                    <span class="quality-label">Media</span>
+                    <span class="quality-desc">720p</span>
+                </div>
+                <div class="quality-option" data-quality="low" onclick="selectQuality('low')">
+                    <span class="quality-label">Baja</span>
+                    <span class="quality-desc">480p</span>
+                </div>
             </div>
         </div>
 
@@ -345,6 +418,7 @@
 
     <script>
         let selectedFormat = 'video';
+        let selectedQuality = 'best';
         let currentPlatform = '';
 
         function selectFormat(format) {
@@ -353,6 +427,53 @@
                 option.classList.remove('active');
             });
             document.querySelector(`[data-format="${format}"]`).classList.add('active');
+        }
+
+        function selectQuality(quality) {
+            const option = document.querySelector(`[data-quality="${quality}"]`);
+            if (option.classList.contains('disabled')) {
+                return; // No permitir seleccionar opciones deshabilitadas
+            }
+            
+            selectedQuality = quality;
+            document.querySelectorAll('.quality-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            option.classList.add('active');
+        }
+
+        function updateQualityOptions(availableQualities) {
+            // Resetear todas las opciones
+            document.querySelectorAll('.quality-option').forEach(option => {
+                option.classList.remove('disabled', 'active');
+            });
+
+            // Deshabilitar las que no están disponibles
+            const qualityMap = {
+                'best': availableQualities.best,
+                'high': availableQualities.high,
+                'medium': availableQualities.medium,
+                'low': availableQualities.low
+            };
+
+            // Encontrar la mejor calidad disponible para seleccionarla por defecto
+            let bestAvailable = null;
+            const priorities = ['best', 'high', 'medium', 'low'];
+            
+            for (const q of priorities) {
+                const option = document.querySelector(`[data-quality="${q}"]`);
+                if (!qualityMap[q]) {
+                    option.classList.add('disabled');
+                } else if (!bestAvailable) {
+                    bestAvailable = q;
+                }
+            }
+
+            // Seleccionar la mejor calidad disponible
+            if (bestAvailable) {
+                selectedQuality = bestAvailable;
+                selectQuality(bestAvailable);
+            }
         }
 
         function showAlert(message, type = 'info') {
@@ -423,8 +544,15 @@
                     document.getElementById('videoTitle').textContent = data.title;
                     document.getElementById('uploader').textContent = data.uploader;
                     document.getElementById('duration').textContent = formatDuration(data.duration);
+                    document.getElementById('maxResolution').textContent = data.max_resolution || 'N/A';
                     document.getElementById('thumbnail').src = data.thumbnail;
                     updatePlatformIndicator(data.platform || 'other');
+                    
+                    // Actualizar opciones de calidad disponibles
+                    if (data.available_qualities) {
+                        updateQualityOptions(data.available_qualities);
+                    }
+                    
                     document.getElementById('videoInfo').classList.add('show');
                     showAlert('Información del video cargada correctamente', 'success');
                 } else {
@@ -447,7 +575,14 @@
 
             showLoading(true);
             const formatText = selectedFormat === 'video' ? 'video' : 'audio';
-            showAlert(`Descargando ${formatText}... Esto puede tomar varios minutos`, 'info');
+            const qualityText = {
+                'best': 'máxima calidad',
+                'high': 'alta calidad',
+                'medium': 'calidad media',
+                'low': 'baja calidad'
+            }[selectedQuality];
+            
+            showAlert(`Descargando ${formatText} en ${qualityText}... Esto puede tomar varios minutos`, 'info');
 
             try {
                 const response = await fetch('/download', {
@@ -457,7 +592,8 @@
                     },
                     body: JSON.stringify({ 
                         url: url,
-                        format: selectedFormat
+                        format: selectedFormat,
+                        quality: selectedQuality
                     })
                 });
 
@@ -482,8 +618,10 @@
             document.getElementById('videoInfo').classList.remove('show');
             document.getElementById('alert').classList.remove('show');
             selectedFormat = 'video';
+            selectedQuality = 'best';
             currentPlatform = '';
             selectFormat('video');
+            selectQuality('best');
         }
 
         // Permitir enviar con Enter

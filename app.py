@@ -59,12 +59,55 @@ def get_info():
         
         video_info = json.loads(result.stdout)
         
+        # Obtener formatos disponibles
+        formats = video_info.get('formats', [])
+        available_qualities = set()
+        
+        for fmt in formats:
+            height = fmt.get('height')
+            if height:
+                if height >= 2160:
+                    available_qualities.add('4k')
+                elif height >= 1440:
+                    available_qualities.add('2k')
+                elif height >= 1080:
+                    available_qualities.add('1080p')
+                elif height >= 720:
+                    available_qualities.add('720p')
+                elif height >= 480:
+                    available_qualities.add('480p')
+                else:
+                    available_qualities.add('360p')
+        
+        # Mapear a nuestras categorías de calidad
+        quality_mapping = {
+            'best': False,
+            'high': False,
+            'medium': False,
+            'low': False
+        }
+        
+        if '4k' in available_qualities or '2k' in available_qualities or '1080p' in available_qualities:
+            quality_mapping['best'] = True
+        if '1080p' in available_qualities:
+            quality_mapping['high'] = True
+        if '720p' in available_qualities:
+            quality_mapping['medium'] = True
+        if '480p' in available_qualities or '360p' in available_qualities:
+            quality_mapping['low'] = True
+        
+        # Si no hay calidades específicas, habilitar todas (para audio o videos sin info)
+        if not any(quality_mapping.values()):
+            quality_mapping = {k: True for k in quality_mapping}
+        
         return jsonify({
             'title': video_info.get('title', 'Sin título'),
             'duration': video_info.get('duration', 0),
             'thumbnail': video_info.get('thumbnail', ''),
             'uploader': video_info.get('uploader', 'Desconocido'),
-            'platform': platform
+            'platform': platform,
+            'available_qualities': quality_mapping,
+            'max_resolution': max(available_qualities) if available_qualities else 'desconocida'
         })
     
     except subprocess.TimeoutExpired:
@@ -81,6 +124,7 @@ def download():
         data = request.get_json()
         url = data.get('url')
         format_type = data.get('format', 'video')  # 'video' o 'audio'
+        quality = data.get('quality', 'best')  # 'best', 'high', 'medium', 'low'
         
         if not url:
             return jsonify({'error': 'URL no proporcionada'}), 400
@@ -111,25 +155,43 @@ def download():
         # Configurar opciones de descarga según el formato
         if format_type == 'audio':
             # Descargar solo audio en formato MP3
+            # Calidad de audio: 0 = mejor, 9 = peor
+            audio_quality_map = {
+                'best': '0',
+                'high': '2',
+                'medium': '5',
+                'low': '9'
+            }
+            audio_quality = audio_quality_map.get(quality, '0')
+            
             cmd = base_cmd + [
                 '-x',  # Extraer audio
                 '--audio-format', 'mp3',  # Convertir a MP3
-                '--audio-quality', '0',  # Mejor calidad
+                '--audio-quality', audio_quality,
                 url
             ]
         else:
             # Descargar video con audio
             if platform == 'tiktok':
-                # TikTok usa formato específico
+                # TikTok - usar formato específico
                 cmd = base_cmd + [
-                    '-f', 'best',  # Mejor calidad disponible
+                    '-f', 'best',
                     '--merge-output-format', 'mp4',
                     url
                 ]
             else:
-                # YouTube y otros
+                # YouTube y otras plataformas
+                # Definir formatos según calidad
+                quality_formats = {
+                    'best': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+                    'high': 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best',
+                    'medium': 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best',
+                    'low': 'bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480][ext=mp4]/best'
+                }
+                video_format = quality_formats.get(quality, quality_formats['best'])
+                
                 cmd = base_cmd + [
-                    '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+                    '-f', video_format,
                     '--merge-output-format', 'mp4',
                     url
                 ]
@@ -149,7 +211,8 @@ def download():
             'success': True,
             'filename': output_filename,
             'message': f'Descarga completada',
-            'platform': platform
+            'platform': platform,
+            'quality': quality
         })
     
     except subprocess.TimeoutExpired:
