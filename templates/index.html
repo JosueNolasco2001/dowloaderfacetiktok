@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Descargador de YouTube</title>
+    <title>Descargador de Videos</title>
     <style>
         * {
             margin: 0;
@@ -42,6 +42,30 @@
             color: #666;
             margin-bottom: 30px;
             font-size: 0.9em;
+        }
+
+        .platform-badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-youtube {
+            background: #ff0000;
+            color: white;
+        }
+
+        .badge-tiktok {
+            background: #000000;
+            color: white;
         }
 
         .input-group {
@@ -145,11 +169,33 @@
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
+            position: relative;
         }
 
         .video-info.show {
             display: block;
             animation: slideIn 0.3s ease;
+        }
+
+        .platform-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .platform-youtube {
+            background: #ff0000;
+            color: white;
+        }
+
+        .platform-tiktok {
+            background: #000000;
+            color: white;
         }
 
         @keyframes slideIn {
@@ -172,6 +218,7 @@
         .video-details h3 {
             color: #333;
             margin-bottom: 10px;
+            padding-right: 80px;
         }
 
         .video-details p {
@@ -244,21 +291,27 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎬 YouTube Downloader</h1>
+        <h1>🎬 Video Downloader</h1>
         <p class="subtitle">Descarga videos o extrae audio en MP3</p>
+
+        <div class="platform-badges">
+            <span class="badge badge-youtube">YouTube</span>
+            <span class="badge badge-tiktok">TikTok</span>
+        </div>
 
         <div class="alert alert-info" id="alert"></div>
 
         <div class="input-group">
-            <label for="url">URL del video de YouTube:</label>
-            <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=..." />
+            <label for="url">URL del video:</label>
+            <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=... o https://www.tiktok.com/@.../video/..." />
         </div>
 
         <div class="video-info" id="videoInfo">
+            <span class="platform-indicator" id="platformIndicator"></span>
             <img id="thumbnail" class="video-thumbnail" alt="Thumbnail" />
             <div class="video-details">
                 <h3 id="videoTitle"></h3>
-                <p><strong>Canal:</strong> <span id="uploader"></span></p>
+                <p><strong>Canal/Autor:</strong> <span id="uploader"></span></p>
                 <p><strong>Duración:</strong> <span id="duration"></span></p>
             </div>
         </div>
@@ -285,12 +338,14 @@
         </div>
 
         <div class="footer">
+            <p>Compatible con YouTube y TikTok</p>
             <p>Usa este descargador responsablemente y respeta los derechos de autor</p>
         </div>
     </div>
 
     <script>
         let selectedFormat = 'video';
+        let currentPlatform = '';
 
         function selectFormat(format) {
             selectedFormat = format;
@@ -315,6 +370,8 @@
         }
 
         function formatDuration(seconds) {
+            if (!seconds || seconds === 0) return 'N/A';
+            
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
             const secs = seconds % 60;
@@ -323,6 +380,22 @@
                 return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             }
             return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updatePlatformIndicator(platform) {
+            const indicator = document.getElementById('platformIndicator');
+            currentPlatform = platform;
+            
+            if (platform === 'youtube') {
+                indicator.textContent = 'YouTube';
+                indicator.className = 'platform-indicator platform-youtube';
+            } else if (platform === 'tiktok') {
+                indicator.textContent = 'TikTok';
+                indicator.className = 'platform-indicator platform-tiktok';
+            } else {
+                indicator.textContent = platform.toUpperCase();
+                indicator.className = 'platform-indicator';
+            }
         }
 
         async function getVideoInfo() {
@@ -351,6 +424,7 @@
                     document.getElementById('uploader').textContent = data.uploader;
                     document.getElementById('duration').textContent = formatDuration(data.duration);
                     document.getElementById('thumbnail').src = data.thumbnail;
+                    updatePlatformIndicator(data.platform || 'other');
                     document.getElementById('videoInfo').classList.add('show');
                     showAlert('Información del video cargada correctamente', 'success');
                 } else {
@@ -372,7 +446,8 @@
             }
 
             showLoading(true);
-            showAlert(`Descargando ${selectedFormat === 'video' ? 'video' : 'audio'}... Esto puede tomar varios minutos`, 'info');
+            const formatText = selectedFormat === 'video' ? 'video' : 'audio';
+            showAlert(`Descargando ${formatText}... Esto puede tomar varios minutos`, 'info');
 
             try {
                 const response = await fetch('/download', {
@@ -407,6 +482,7 @@
             document.getElementById('videoInfo').classList.remove('show');
             document.getElementById('alert').classList.remove('show');
             selectedFormat = 'video';
+            currentPlatform = '';
             selectFormat('video');
         }
 
