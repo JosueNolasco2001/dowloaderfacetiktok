@@ -1,0 +1,125 @@
+╔══════════════════════════════════════════════════════════╗
+║     GUÍA RÁPIDA - DESCARGADOR DE YOUTUBE                ║
+╚══════════════════════════════════════════════════════════╝
+
+🚀 INICIO RÁPIDO
+════════════════════════════════════════════════════════════
+
+1️⃣  INSTALAR DEPENDENCIAS:
+
+   Windows:
+   --------
+   - Doble clic en "install.bat"
+   
+   Linux/Mac:
+   ----------
+   - Ejecuta en terminal: ./install.sh
+   
+   O manualmente:
+   --------------
+   pip install flask yt-dlp
+
+
+2️⃣  INSTALAR FFMPEG (IMPORTANTE):
+
+   Windows:
+   --------
+   - Descarga: https://www.gyan.dev/ffmpeg/builds/
+   - Extrae y agrega al PATH
+
+   Mac:
+   ----
+   brew install ffmpeg
+
+   Linux:
+   ------
+   sudo apt install ffmpeg    # Ubuntu/Debian
+   sudo dnf install ffmpeg    # Fedora
+
+
+3️⃣  EJECUTAR LA APLICACIÓN:
+
+   python app.py
+
+   Luego abre: http://localhost:5000
+
+
+4️⃣  USAR LA APLICACIÓN:
+
+   a) Pega la URL del video de YouTube
+   b) Selecciona formato: Video (MP4) o Audio (MP3)
+   c) Haz clic en "Descargar"
+   d) Los archivos se guardan en la carpeta "descargas/"
+
+
+═══════════════════════════════════════════════════════════
+
+📋 VERIFICAR INSTALACIÓN:
+
+   yt-dlp --version    # Debe mostrar la versión
+   ffmpeg -version     # Debe mostrar la versión
+   python --version    # Debe ser 3.7 o superior
+
+
+═══════════════════════════════════════════════════════════
+
+❓ PROBLEMAS COMUNES:
+
+   ⚠️  "yt-dlp no encontrado"
+       → pip install yt-dlp
+       → En Windows: agrega yt-dlp al PATH
+
+   ⚠️  "ffmpeg no encontrado"
+       → Instala FFmpeg según tu sistema operativo
+       → Verifica que esté en el PATH
+
+   ⚠️  "No se puede descargar el video"
+       → Verifica que la URL sea correcta
+       → Algunos videos tienen restricciones
+       → Intenta con otro video
+
+   ⚠️  El servidor no inicia
+       → Verifica que el puerto 5000 no esté en uso
+       → Ejecuta: netstat -ano | findstr :5000 (Windows)
+       → Ejecuta: lsof -i :5000 (Linux/Mac)
+
+
+═══════════════════════════════════════════════════════════
+
+🎯 CARACTERÍSTICAS:
+
+   ✅ Descarga videos en MP4 (mejor calidad)
+   ✅ Extrae audio en MP3 (máxima calidad)
+   ✅ Vista previa de información del video
+   ✅ Interfaz moderna y fácil de usar
+   ✅ Compatible con Windows, Mac y Linux
+
+
+═══════════════════════════════════════════════════════════
+
+⚖️  IMPORTANTE:
+
+   - Usa esta herramienta de manera responsable
+   - Respeta los derechos de autor
+   - Solo descarga contenido que tengas derecho a usar
+   - No redistribuyas contenido protegido
+
+
+═══════════════════════════════════════════════════════════
+
+💡 CONSEJOS:
+
+   📌 Copia la URL completa del video
+   📌 Ten suficiente espacio en disco
+   📌 Usa una conexión a internet estable
+   📌 Videos largos pueden tardar varios minutos
+   📌 La calidad máxima genera archivos grandes
+
+
+═══════════════════════════════════════════════════════════
+
+🔄 Para actualizar yt-dlp:
+   pip install --upgrade yt-dlp
+
+
+¡Disfruta descargando tus videos favoritos! 🎉
