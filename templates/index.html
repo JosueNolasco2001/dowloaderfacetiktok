@@ -1,635 +1,564 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Descargador de Videos</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Video Downloader · Simple & Rápido</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+  <style>
+    :root {
+      --bg: #0f0f17;
+      --bg-card: rgba(25, 25, 45, 0.55);
+      --border: rgba(255,255,255, 0.09);
+      --text-primary: #f1f1ff;
+      --text-secondary: #a0a0cc;
+      --accent: #7b5eff;
+      --accent-dark: #5d3fff;
+      --success: #00d084;
+      --danger: #ff4d6b;
+    }
 
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-            width: 100%;
-            padding: 40px;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 2em;
-        }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0a0a14 0%, #13132b 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem 1rem;
+    }
 
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 0.9em;
-        }
+    .container {
+      width: 100%;
+      max-width: 580px;
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 70px rgba(0,0,0,0.6);
+      padding: 2.5rem 1.8rem;
+      position: relative;
+      overflow: hidden;
+    }
 
-        .platform-badges {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
+    h1 {
+      font-size: clamp(1.9rem, 6vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.6px;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
 
-        .badge {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
+    .subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: clamp(0.9rem, 3.5vw, 0.98rem);
+      margin-bottom: 1.8rem;
+    }
 
-        .badge-youtube {
-            background: #ff0000;
-            color: white;
-        }
+    .input-wrapper {
+      margin-bottom: 1.6rem;
+    }
 
-        .badge-tiktok {
-            background: #000000;
-            color: white;
-        }
+    input[type="text"] {
+      width: 100%;
+      padding: 1.1rem 1.4rem;
+      background: rgba(35,35,65,0.5);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: white;
+      font-size: clamp(0.95rem, 3.5vw, 1.05rem);
+      transition: all 0.25s ease;
+    }
 
-        .input-group {
-            margin-bottom: 20px;
-        }
+    input[type="text"]::placeholder {
+      color: rgba(160,160,204,0.6);
+    }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 600;
-        }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(123,94,255,0.2);
+      background: rgba(35,35,65,0.7);
+    }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
+    .format-toggle {
+      display: flex;
+      background: rgba(30,30,55,0.5);
+      border-radius: 14px;
+      padding: 0.4rem;
+      margin: 1.6rem 0;
+      backdrop-filter: blur(6px);
+    }
 
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
+    .format-btn {
+      flex: 1;
+      padding: 0.95rem;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: clamp(0.9rem, 3.2vw, 1rem);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
 
-        .format-selector {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
+    .format-btn.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 14px rgba(123,94,255,0.4);
+    }
 
-        .format-option {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: white;
-        }
+    .quality-selector {
+      margin: 1.8rem 0;
+    }
 
-        .format-option:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-        }
+    .quality-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
 
-        .format-option.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
+    .quality-option {
+      padding: 12px 10px;
+      background: rgba(35,35,65,0.4);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
 
-        .format-icon {
-            font-size: 2em;
-            margin-bottom: 5px;
-        }
+    .quality-option:hover:not(.disabled) {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
 
-        .quality-selector {
-            margin-bottom: 25px;
-        }
+    .quality-option.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
 
-        .quality-options {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
+    .quality-option.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
 
-        .quality-option {
-            padding: 12px 8px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: white;
-            font-size: 0.9em;
-        }
+    .quality-label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 3px;
+    }
 
-        .quality-option:hover:not(.disabled) {
-            border-color: #667eea;
-            transform: translateY(-2px);
-        }
+    .quality-desc {
+      font-size: 0.76rem;
+      opacity: 0.75;
+    }
 
-        .quality-option.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
+    .btn {
+      width: 100%;
+      padding: 1.15rem;
+      border: none;
+      border-radius: 16px;
+      font-size: clamp(0.98rem, 3.8vw, 1.05rem);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0.6rem 0;
+      touch-action: manipulation;
+    }
 
-        .quality-option.disabled {
-            background: #f5f5f5;
-            color: #999;
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      color: white;
+    }
 
-        .quality-label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 3px;
-        }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(123,94,255,0.35);
+    }
 
-        .quality-desc {
-            font-size: 0.8em;
-            opacity: 0.8;
-        }
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
 
-        .btn {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 10px;
-        }
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text-secondary);
+    }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.14);
+    }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
+    .video-preview {
+      display: none;
+      margin: 2rem 0;
+      padding: 1.4rem;
+      background: rgba(30,30,55,0.4);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
 
-        .btn-primary:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
+    .video-preview.show {
+      display: block;
+    }
 
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #666;
-        }
+    .thumbnail {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 1.1rem;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+    }
 
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
+    .info-title {
+      font-size: clamp(1.2rem, 4.5vw, 1.35rem);
+      margin-bottom: 0.7rem;
+      line-height: 1.3;
+    }
 
-        .video-info {
-            display: none;
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            position: relative;
-        }
+    .info-meta p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 0.4rem 0;
+    }
 
-        .video-info.show {
-            display: block;
-            animation: slideIn 0.3s ease;
-        }
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 2.2rem 0;
+    }
 
-        .platform-indicator {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 0.75em;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
+    .loading.show {
+      display: block;
+    }
 
-        .platform-youtube {
-            background: #ff0000;
-            color: white;
-        }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 5px solid rgba(123,94,255,0.2);
+      border-top: 5px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
 
-        .platform-tiktok {
-            background: #000000;
-            color: white;
-        }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    .alert {
+      padding: 1rem 1.3rem;
+      border-radius: 14px;
+      margin-bottom: 1.6rem;
+      font-size: 0.95rem;
+      display: none;
+    }
 
-        .video-thumbnail {
-            width: 100%;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
+    .alert.show { display: block; }
 
-        .video-details h3 {
-            color: #333;
-            margin-bottom: 10px;
-            padding-right: 80px;
-        }
+    .alert-success { background: rgba(0,208,132,0.18); color: #a0ffcc; border: 1px solid rgba(0,208,132,0.35); }
+    .alert-error   { background: rgba(255,77,107,0.18);  color: #ff9fb3; border: 1px solid rgba(255,77,107,0.35); }
+    .alert-info    { background: rgba(59,130,246,0.18);   color: #a5d8ff; border: 1px solid rgba(59,130,246,0.35); }
 
-        .video-details p {
-            color: #666;
-            margin-bottom: 5px;
-        }
+    .footer-note {
+      text-align: center;
+      color: #555577;
+      font-size: 0.8rem;
+      margin-top: 2.5rem;
+      line-height: 1.5;
+    }
 
-        .alert {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-        }
+    /* ────────────────────────────────────────────────
+       Responsive adjustments
+    ──────────────────────────────────────────────── */
+    @media (min-width: 480px) {
+      .container {
+        padding: 2.8rem 2.2rem;
+      }
+      
+      .quality-options {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      
+      .quality-option {
+        font-size: 0.9rem;
+      }
+    }
 
-        .alert.show {
-            display: block;
-            animation: slideIn 0.3s ease;
-        }
+    @media (min-width: 768px) {
+      body {
+        padding: 2rem;
+      }
+      
+      .container {
+        max-width: 620px;
+        padding: 3rem 2.8rem;
+      }
+    }
 
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            color: #999;
-            font-size: 0.85em;
-        }
-    </style>
+    @media (min-width: 1024px) {
+      .container {
+        max-width: 680px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎬 Video Downloader</h1>
-        <p class="subtitle">Descarga videos o extrae audio en MP3</p>
 
-        <div class="platform-badges">
-            <span class="badge badge-youtube">YouTube</span>
-            <span class="badge badge-tiktok">TikTok</span>
-        </div>
+  <div class="container">
+    <h1>Video Downloader</h1>
+    <p class="subtitle">YouTube & TikTok · Simple y rápido</p>
 
-        <div class="alert alert-info" id="alert"></div>
+    <div class="alert alert-info" id="alert"></div>
 
-        <div class="input-group">
-            <label for="url">URL del video:</label>
-            <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=... o https://www.tiktok.com/@.../video/..." />
-        </div>
-
-        <div class="video-info" id="videoInfo">
-            <span class="platform-indicator" id="platformIndicator"></span>
-            <img id="thumbnail" class="video-thumbnail" alt="Thumbnail" />
-            <div class="video-details">
-                <h3 id="videoTitle"></h3>
-                <p><strong>Canal/Autor:</strong> <span id="uploader"></span></p>
-                <p><strong>Duración:</strong> <span id="duration"></span></p>
-                <p><strong>Resolución máxima:</strong> <span id="maxResolution"></span></p>
-            </div>
-        </div>
-
-        <label>Selecciona el formato:</label>
-        <div class="format-selector">
-            <div class="format-option active" data-format="video" onclick="selectFormat('video')">
-                <div class="format-icon">🎥</div>
-                <div>Video MP4</div>
-            </div>
-            <div class="format-option" data-format="audio" onclick="selectFormat('audio')">
-                <div class="format-icon">🎵</div>
-                <div>Audio MP3</div>
-            </div>
-        </div>
-
-        <div class="quality-selector">
-            <label>Selecciona la calidad:</label>
-            <div class="quality-options">
-                <div class="quality-option active" data-quality="best" onclick="selectQuality('best')">
-                    <span class="quality-label">Máxima</span>
-                    <span class="quality-desc">4K/1080p+</span>
-                </div>
-                <div class="quality-option" data-quality="high" onclick="selectQuality('high')">
-                    <span class="quality-label">Alta</span>
-                    <span class="quality-desc">1080p</span>
-                </div>
-                <div class="quality-option" data-quality="medium" onclick="selectQuality('medium')">
-                    <span class="quality-label">Media</span>
-                    <span class="quality-desc">720p</span>
-                </div>
-                <div class="quality-option" data-quality="low" onclick="selectQuality('low')">
-                    <span class="quality-label">Baja</span>
-                    <span class="quality-desc">480p</span>
-                </div>
-            </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="getVideoInfo()">📋 Ver información del video</button>
-        <button class="btn btn-primary" onclick="downloadVideo()" id="downloadBtn">⬇️ Descargar</button>
-        <button class="btn btn-secondary" onclick="clearForm()">🗑️ Limpiar</button>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Procesando... Por favor espera</p>
-        </div>
-
-        <div class="footer">
-            <p>Compatible con YouTube y TikTok</p>
-            <p>Usa este descargador responsablemente y respeta los derechos de autor</p>
-        </div>
+    <div class="input-wrapper">
+      <input type="text" id="url" placeholder="Pega la URL de YouTube o TikTok..." autocomplete="off" />
     </div>
 
-    <script>
-        let selectedFormat = 'video';
-        let selectedQuality = 'best';
-        let currentPlatform = '';
+    <div class="format-toggle">
+      <button class="format-btn active" data-format="video">Video MP4</button>
+      <button class="format-btn" data-format="audio">Solo Audio MP3</button>
+    </div>
 
-        function selectFormat(format) {
-            selectedFormat = format;
-            document.querySelectorAll('.format-option').forEach(option => {
-                option.classList.remove('active');
-            });
-            document.querySelector(`[data-format="${format}"]`).classList.add('active');
+    <div class="quality-selector">
+      <label style="display:block; margin-bottom:0.9rem; color:var(--text-secondary); font-weight:500;">Calidad</label>
+      <div class="quality-options">
+        <div class="quality-option active" data-quality="best">
+          <span class="quality-label">Máxima</span>
+          <span class="quality-desc">4K/1080p+</span>
+        </div>
+        <div class="quality-option" data-quality="high">
+          <span class="quality-label">Alta</span>
+          <span class="quality-desc">1080p</span>
+        </div>
+        <div class="quality-option" data-quality="medium">
+          <span class="quality-label">Media</span>
+          <span class="quality-desc">720p</span>
+        </div>
+        <div class="quality-option" data-quality="low">
+          <span class="quality-label">Baja</span>
+          <span class="quality-desc">480p</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="getVideoInfo()">Ver información del video</button>
+    <button class="btn btn-primary" onclick="downloadVideo()" id="downloadBtn" disabled>Descargar</button>
+    <button class="btn btn-secondary" onclick="clearForm()">Limpiar</button>
+
+    <div class="video-preview" id="videoInfo">
+      <img id="thumbnail" class="thumbnail" alt="Miniatura" />
+      <div class="info-title" id="videoTitle"></div>
+      <div class="info-meta">
+        <p><strong>Canal/Autor:</strong> <span id="uploader"></span></p>
+        <p><strong>Duración:</strong> <span id="duration"></span></p>
+        <p><strong>Resolución máxima:</strong> <span id="maxResolution"></span></p>
+      </div>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Procesando... por favor espera</p>
+    </div>
+
+    <div class="footer-note">
+      Compatible con YouTube y TikTok • Usa responsablemente y respeta los derechos de autor
+    </div>
+  </div>
+
+  <script>
+    // ────────────────────────────────────────────────
+    // Tu JavaScript original (sin cambios importantes)
+    // ────────────────────────────────────────────────
+    let selectedFormat = 'video';
+    let selectedQuality = 'best';
+
+    document.querySelectorAll('.format-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedFormat = btn.dataset.format;
+      });
+    });
+
+    function selectQuality(quality) {
+      const option = document.querySelector(`.quality-option[data-quality="${quality}"]`);
+      if (option.classList.contains('disabled')) return;
+
+      selectedQuality = quality;
+      document.querySelectorAll('.quality-option').forEach(opt => opt.classList.remove('active'));
+      option.classList.add('active');
+    }
+
+    document.querySelectorAll('.quality-option').forEach(opt => {
+      opt.addEventListener('click', () => selectQuality(opt.dataset.quality));
+    });
+
+    function updateQualityOptions(availableQualities) {
+      document.querySelectorAll('.quality-option').forEach(option => {
+        option.classList.remove('disabled', 'active');
+      });
+
+      const qualityMap = {
+        'best': availableQualities.best,
+        'high': availableQualities.high,
+        'medium': availableQualities.medium,
+        'low': availableQualities.low
+      };
+
+      let bestAvailable = null;
+      const priorities = ['best', 'high', 'medium', 'low'];
+
+      for (const q of priorities) {
+        const option = document.querySelector(`.quality-option[data-quality="${q}"]`);
+        if (!qualityMap[q]) {
+          option.classList.add('disabled');
+        } else if (!bestAvailable) {
+          bestAvailable = q;
         }
+      }
 
-        function selectQuality(quality) {
-            const option = document.querySelector(`[data-quality="${quality}"]`);
-            if (option.classList.contains('disabled')) {
-                return; // No permitir seleccionar opciones deshabilitadas
-            }
-            
-            selectedQuality = quality;
-            document.querySelectorAll('.quality-option').forEach(option => {
-                option.classList.remove('active');
-            });
-            option.classList.add('active');
-        }
+      if (bestAvailable) {
+        selectedQuality = bestAvailable;
+        selectQuality(bestAvailable);
+      }
+    }
 
-        function updateQualityOptions(availableQualities) {
-            // Resetear todas las opciones
-            document.querySelectorAll('.quality-option').forEach(option => {
-                option.classList.remove('disabled', 'active');
-            });
+    function showAlert(message, type = 'info') {
+      const alert = document.getElementById('alert');
+      alert.className = `alert alert-${type} show`;
+      alert.textContent = message;
+      setTimeout(() => alert.classList.remove('show'), 5500);
+    }
 
-            // Deshabilitar las que no están disponibles
-            const qualityMap = {
-                'best': availableQualities.best,
-                'high': availableQualities.high,
-                'medium': availableQualities.medium,
-                'low': availableQualities.low
-            };
+    function showLoading(show) {
+      document.getElementById('loading').classList.toggle('show', show);
+      document.getElementById('downloadBtn').disabled = show;
+    }
 
-            // Encontrar la mejor calidad disponible para seleccionarla por defecto
-            let bestAvailable = null;
-            const priorities = ['best', 'high', 'medium', 'low'];
-            
-            for (const q of priorities) {
-                const option = document.querySelector(`[data-quality="${q}"]`);
-                if (!qualityMap[q]) {
-                    option.classList.add('disabled');
-                } else if (!bestAvailable) {
-                    bestAvailable = q;
-                }
-            }
+    function formatDuration(seconds) {
+      if (!seconds || seconds === 0) return 'N/A';
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      if (h > 0) return `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+      return `${m}:${s.toString().padStart(2,'0')}`;
+    }
 
-            // Seleccionar la mejor calidad disponible
-            if (bestAvailable) {
-                selectedQuality = bestAvailable;
-                selectQuality(bestAvailable);
-            }
-        }
+    async function getVideoInfo() {
+      const url = document.getElementById('url').value.trim();
+      if (!url) return showAlert('Ingresa una URL válida', 'error');
 
-        function showAlert(message, type = 'info') {
-            const alert = document.getElementById('alert');
-            alert.className = `alert alert-${type} show`;
-            alert.textContent = message;
-            setTimeout(() => {
-                alert.classList.remove('show');
-            }, 5000);
-        }
+      showLoading(true);
 
-        function showLoading(show) {
-            document.getElementById('loading').classList.toggle('show', show);
-            document.getElementById('downloadBtn').disabled = show;
-        }
-
-        function formatDuration(seconds) {
-            if (!seconds || seconds === 0) return 'N/A';
-            
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-            
-            if (hours > 0) {
-                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }
-            return `${minutes}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function updatePlatformIndicator(platform) {
-            const indicator = document.getElementById('platformIndicator');
-            currentPlatform = platform;
-            
-            if (platform === 'youtube') {
-                indicator.textContent = 'YouTube';
-                indicator.className = 'platform-indicator platform-youtube';
-            } else if (platform === 'tiktok') {
-                indicator.textContent = 'TikTok';
-                indicator.className = 'platform-indicator platform-tiktok';
-            } else {
-                indicator.textContent = platform.toUpperCase();
-                indicator.className = 'platform-indicator';
-            }
-        }
-
-        async function getVideoInfo() {
-            const url = document.getElementById('url').value.trim();
-            
-            if (!url) {
-                showAlert('Por favor ingresa una URL', 'error');
-                return;
-            }
-
-            showLoading(true);
-
-            try {
-                const response = await fetch('/get_info', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ url: url })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    document.getElementById('videoTitle').textContent = data.title;
-                    document.getElementById('uploader').textContent = data.uploader;
-                    document.getElementById('duration').textContent = formatDuration(data.duration);
-                    document.getElementById('maxResolution').textContent = data.max_resolution || 'N/A';
-                    document.getElementById('thumbnail').src = data.thumbnail;
-                    updatePlatformIndicator(data.platform || 'other');
-                    
-                    // Actualizar opciones de calidad disponibles
-                    if (data.available_qualities) {
-                        updateQualityOptions(data.available_qualities);
-                    }
-                    
-                    document.getElementById('videoInfo').classList.add('show');
-                    showAlert('Información del video cargada correctamente', 'success');
-                } else {
-                    showAlert(data.error || 'Error al obtener información', 'error');
-                }
-            } catch (error) {
-                showAlert('Error de conexión: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async function downloadVideo() {
-            const url = document.getElementById('url').value.trim();
-            
-            if (!url) {
-                showAlert('Por favor ingresa una URL', 'error');
-                return;
-            }
-
-            showLoading(true);
-            const formatText = selectedFormat === 'video' ? 'video' : 'audio';
-            const qualityText = {
-                'best': 'máxima calidad',
-                'high': 'alta calidad',
-                'medium': 'calidad media',
-                'low': 'baja calidad'
-            }[selectedQuality];
-            
-            showAlert(`Descargando ${formatText} en ${qualityText}... Esto puede tomar varios minutos`, 'info');
-
-            try {
-                const response = await fetch('/download', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        url: url,
-                        format: selectedFormat,
-                        quality: selectedQuality
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showAlert(data.message, 'success');
-                    // Descargar el archivo automáticamente
-                    window.location.href = `/download_file/${data.filename}`;
-                } else {
-                    showAlert(data.error || 'Error en la descarga', 'error');
-                }
-            } catch (error) {
-                showAlert('Error de conexión: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        function clearForm() {
-            document.getElementById('url').value = '';
-            document.getElementById('videoInfo').classList.remove('show');
-            document.getElementById('alert').classList.remove('show');
-            selectedFormat = 'video';
-            selectedQuality = 'best';
-            currentPlatform = '';
-            selectFormat('video');
-            selectQuality('best');
-        }
-
-        // Permitir enviar con Enter
-        document.getElementById('url').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                getVideoInfo();
-            }
+      try {
+        const response = await fetch('/get_info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
         });
-    </script>
+
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById('videoTitle').textContent = data.title || 'Sin título';
+          document.getElementById('uploader').textContent = data.uploader || '—';
+          document.getElementById('duration').textContent = formatDuration(data.duration);
+          document.getElementById('maxResolution').textContent = data.max_resolution || 'N/A';
+          document.getElementById('thumbnail').src = data.thumbnail || '';
+
+          if (data.available_qualities) {
+            updateQualityOptions(data.available_qualities);
+          }
+
+          document.getElementById('videoInfo').classList.add('show');
+          document.getElementById('downloadBtn').disabled = false;
+          showAlert('Información cargada correctamente', 'success');
+        } else {
+          showAlert(data.error || 'No se pudo obtener la información', 'error');
+        }
+      } catch (err) {
+        showAlert('Error de conexión: ' + err.message, 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function downloadVideo() {
+      const url = document.getElementById('url').value.trim();
+      if (!url) return showAlert('Ingresa una URL primero', 'error');
+
+      showLoading(true);
+      const formatText = selectedFormat === 'video' ? 'video' : 'audio';
+      const qualityText = {
+        'best': 'máxima calidad',
+        'high': 'alta calidad',
+        'medium': 'calidad media',
+        'low': 'baja calidad'
+      }[selectedQuality];
+
+      showAlert(`Descargando ${formatText} en ${qualityText}... puede tardar`, 'info');
+
+      try {
+        const response = await fetch('/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, format: selectedFormat, quality: selectedQuality })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showAlert(data.message || 'Descarga iniciada', 'success');
+          window.location.href = `/download_file/${data.filename}`;
+        } else {
+          showAlert(data.error || 'Error al descargar', 'error');
+        }
+      } catch (err) {
+        showAlert('Error de conexión: ' + err.message, 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function clearForm() {
+      document.getElementById('url').value = '';
+      document.getElementById('videoInfo').classList.remove('show');
+      document.getElementById('alert').classList.remove('show');
+      document.getElementById('downloadBtn').disabled = true;
+      selectedFormat = 'video';
+      selectedQuality = 'best';
+
+      document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.format-btn[data-format="video"]').classList.add('active');
+
+      document.querySelectorAll('.quality-option').forEach(opt => opt.classList.remove('active'));
+      document.querySelector('.quality-option[data-quality="best"]').classList.add('active');
+    }
+
+    document.getElementById('url').addEventListener('keypress', e => {
+      if (e.key === 'Enter') getVideoInfo();
+    });
+  </script>
 </body>
 </html>
