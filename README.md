@@ -11,12 +11,70 @@ Una aplicación web simple y moderna para descargar videos de YouTube en formato
 - ⚡ Rápido y eficiente
 - 📱 Diseño responsivo
 
-## 🔧 Requisitos
+## 🐋 Instalación con Docker (Recomendado)
+
+La forma más fácil de ejecutar esta aplicación es usando Docker. No necesitas instalar Python, FFmpeg ni ninguna dependencia manualmente.
+
+### Requisitos
+- Docker y Docker Compose instalados ([Descargar Docker](https://www.docker.com/products/docker-desktop))
+
+### Pasos
+
+1. **Clona el repositorio**:
+```bash
+git clone <tu-repositorio>
+cd <nombre-del-proyecto>
+```
+
+2. **Construye y ejecuta con Docker Compose**:
+```bash
+docker-compose up -d --build
+```
+
+3. **Accede a la aplicación**:
+```
+http://localhost:5000
+```
+
+4. **Ver logs** (opcional):
+```bash
+docker-compose logs -f
+```
+
+5. **Detener la aplicación**:
+```bash
+docker-compose down
+```
+
+### Actualizar el código
+
+Si haces cambios en el código:
+```bash
+docker-compose down
+docker-compose up -d --build
+```
+
+O forzar reconstrucción completa:
+```bash
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+### Notas importantes
+- Los archivos descargados se guardan en la carpeta `descargas/` de tu proyecto
+- Esta carpeta persiste incluso si eliminas el contenedor
+- El puerto por defecto es `5000`, puedes cambiarlo en `docker-compose.yml`
+
+---
+
+## 🔧 Instalación Manual (Alternativa)
+
+Si prefieres no usar Docker, puedes instalar las dependencias manualmente:
+
+### Requisitos
 
 - Python 3.7 o superior
 - pip (gestor de paquetes de Python)
-
-## 📦 Instalación
 
 ### Paso 1: Instalar yt-dlp
 
@@ -98,7 +156,10 @@ http://localhost:5000
 ```
 proyecto/
 │
-├── app.py                 # Servidor Flask principal
+├── Dockerfile             # Configuración de Docker
+├── docker-compose.yml     # Orquestación de contenedores
+├── .dockerignore         # Archivos ignorados por Docker
+├── app.py                # Servidor Flask principal
 ├── templates/
 │   └── index.html        # Interfaz web
 ├── descargas/            # Carpeta donde se guardan los archivos
