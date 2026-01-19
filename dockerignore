@@ -1,0 +1,44 @@
+# Entornos virtuales de Python
+venv/
+env/
+ENV/
+.venv
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Archivos de descarga (se montarán como volumen)
+descargas/*
+!descargas/.gitkeep
+
+# Archivos de configuración local
+*.bat
+*.sh
+.env
+.env.local
+
+# Git
+.git/
+.gitignore
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentación
+README.md
+INICIO_RAPIDO.txt
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
