@@ -329,6 +329,12 @@
     <h1>Video Downloader</h1>
     <p class="subtitle">YouTube & TikTok · Simple y rápido</p>
 
+    {% if user_email and user_email != 'Invitado' %}
+    <div style="text-align: center; margin-bottom: 1rem; font-size: 0.85rem; color: var(--accent);">
+      <span style="opacity: 0.7;">Sesión:</span> {{ user_email }}
+    </div>
+    {% endif %}
+
     <div class="alert alert-info" id="alert"></div>
 
     <div class="input-wrapper">
@@ -480,6 +486,10 @@
 
         const data = await response.json();
 
+        if (response.status === 429) {
+          return showAlert(data.message || 'Límite excedido. Espera un momento.', 'error');
+        }
+
         if (response.ok) {
           document.getElementById('videoTitle').textContent = data.title || 'Sin título';
           document.getElementById('uploader').textContent = data.uploader || '—';
@@ -527,6 +537,10 @@
         });
 
         const data = await response.json();
+
+        if (response.status === 429) {
+          return showAlert(data.message || 'Límite de descargas alcanzado.', 'error');
+        }
 
         if (response.ok) {
           showAlert(data.message || 'Descarga iniciada', 'success');

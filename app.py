@@ -6,8 +6,24 @@ from pathlib import Path
 import re
 import unicodedata
 import uuid
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
+
+# Configuración de Rate Limiting
+def get_user_identifier():
+    # Prioridad: Email de Cloudflare Access > IP de Cloudflare > IP remota
+    return request.headers.get('Cf-Access-Authenticated-User-Email') or \
+           request.headers.get('CF-Connecting-IP') or \
+           get_remote_address()
+
+limiter = Limiter(
+    key_func=get_user_identifier,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://",
+)
 
 # Directorio para guardar las descargas
 DOWNLOAD_FOLDER = Path('descargas')
@@ -25,9 +41,11 @@ def detect_platform(url):
 @app.route('/')
 def index():
     """Renderiza la página principal"""
-    return render_template('index.html')
+    user_email = request.headers.get('Cf-Access-Authenticated-User-Email', 'Invitado')
+    return render_template('index.html', user_email=user_email)
 
 @app.route('/get_info', methods=['POST'])
+@limiter.limit("10 per minute")
 def get_info():
     """Obtiene información del video sin descargarlo"""
     try:
@@ -118,6 +136,7 @@ def get_info():
         return jsonify({'error': f'Error: {str(e)}'}), 500
 
 @app.route('/download', methods=['POST'])
+@limiter.limit("5 per minute")
 def download():
     """Descarga el video o audio según la opción seleccionada"""
     try:
@@ -242,6 +261,14 @@ def cleanup():
         return jsonify({'success': True, 'message': 'Archivos eliminados'})
     except Exception as e:
         return jsonify({'error': f'Error: {str(e)}'}), 500
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({
+        "error": "Límite de velocidad excedido",
+        "message": "Has realizado demasiadas solicitudes. Por favor, espera un momento.",
+        "retry_after": e.description
+    }), 429
 
 if __name__ == '__main__':
     print("🚀 Servidor iniciado en http://localhost:5000")
