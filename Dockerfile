@@ -22,8 +22,8 @@ COPY templates/ templates/
 # Crear directorio para descargas
 RUN mkdir -p descargas
 
-# Exponer el puerto 5000
-EXPOSE 5000
+# Exponer el puerto 8000
+EXPOSE 8000
 
 # Variables de entorno
 ENV FLASK_APP=app.py

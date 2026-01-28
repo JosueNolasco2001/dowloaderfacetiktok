@@ -5,7 +5,7 @@ services:
     build: .
     container_name: video-downloader
     ports:
-      - "5000:5000"
+      - "8000:8000"
     volumes:
       # Montar carpeta de descargas para persistencia
       - ./descargas:/app/descargas
@@ -18,7 +18,13 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 2G
-        reservations:
-          memory: 512M
+          cpus: '1'
+          memory: 1G
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=eyJhIjoiMmQyZmFjNTkxMjMzNDhlNjk2Njk1ODI0OGU5ZGI4MTQiLCJ0IjoiMzk2NjZiZDItOTliYS00ZDRkLTk5NjYtNDc2ZTIzM2U2NzI2IiwicyI6Ik5UTTFabUppTTJZdE56a3lOaTAwWlRRNExXRXhZVGt0T1ROaU5EaGpOekV6TjJZMyJ9
